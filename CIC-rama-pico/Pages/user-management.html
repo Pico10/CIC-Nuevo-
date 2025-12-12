@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Usuarios - CIC</title>
+
+  <link rel="stylesheet" href="../Styles/admin.css" />
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png" />
+</head>
+<body>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Gestión de Usuarios - CIC</h1>
+    <nav class="nav-links">
+      <a href="admin.html">Panel Principal</a>
+      <a href="../index.html">Inicio</a>
+      <a href="#" onclick="logout()">Cerrar Sesión</a>
+    </nav>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="container">
+    <!-- FORM ALTA USUARIO -->
+    <h2>Agregar Nuevo Usuario</h2>
+    <form
+      id="userForm"
+      style="
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      "
+    >
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 15px;
+          margin-bottom: 15px;
+        "
+      >
+        <div>
+          <label>Usuario:</label>
+          <input
+            type="text"
+            id="newUsername"
+            required
+            style="width: 100%; padding: 8px"
+          />
+        </div>
+
+        <div>
+          <label>Contraseña:</label>
+          <input
+            type="password"
+            id="newPassword"
+            required
+            style="width: 100%; padding: 8px"
+          />
+        </div>
+
+        <div>
+          <label>Rol:</label>
+          <select
+            id="newRole"
+            required
+            style="width: 100%; padding: 8px"
+          >
+            <option value="">Seleccionar</option>
+            <option value="admin">Administrador</option>
+            <option value="operador">Operador</option>
+            <option value="lectura">Solo Lectura</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            id="newEmail"
+            style="width: 100%; padding: 8px"
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        Crear Usuario
+      </button>
+    </form>
+
+    <!-- LISTA USUARIOS -->
+    <h2>Usuarios del Sistema</h2>
+    <div id="usersList"></div>
+  </div>
+
+  <!-- SCRIPT PRINCIPAL -->
+  <script type="module">
+    import {
+      initPagePermissions,
+      assertCanManageUsers,
+      assertCanDeleteRecords,
+      logAudit,
+      isMasterAdmin,
+    } from "../JavaScript/permissions.js";
+
+    // ==============================
+    // UTILIDADES
+    // ==============================
+    function getUsers() {
+      const stored = localStorage.getItem("cicUsers");
+      if (!stored) return [];
+      try {
+        return JSON.parse(stored) || [];
+      } catch (e) {
+        console.error("Error parseando cicUsers:", e);
+        return [];
+      }
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem("cicUsers", JSON.stringify(users));
+    }
+
+    // ==============================
+    // RENDER LISTA DE USUARIOS
+    // ==============================
+    function loadUsers() {
+      const users = getUsers();
+      const container = document.getElementById("usersList");
+      const esMaestro = isMasterAdmin();
+
+      if (!users.length) {
+        container.innerHTML =
+          '<p style="margin-top:10px;">No hay usuarios creados todavía.</p>';
+        return;
+      }
+
+      let html = `
+        <div class="data-table">
+          <div class="table-header">
+            <h3>Usuarios del Sistema</h3>
+            <span>${users.length} usuarios</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Email</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+
+      users.forEach((user) => {
+        const estado =
+          user.status === "pending"
+            ? "Pendiente"
+            : user.active
+            ? "Activo"
+            : "Inactivo";
+
+        const badgeColor =
+          user.status === "pending"
+            ? "background:#fff3cd;color:#856404;"
+            : user.active
+            ? "background:#d1e7dd;color:#0f5132;"
+            : "background:#f8d7da;color:#842029;";
+
+        const btnAprobar =
+          esMaestro && user.status === "pending"
+            ? `<button class="btn btn-primary btn-small" onclick="approveUser(${user.id})">Aprobar</button>`
+            : "";
+
+        html += `
+          <tr>
+            <td>${user.username}</td>
+            <td>${user.role}</td>
+            <td>${user.email || "N/A"}</td>
+            <td>
+              <span style="padding:4px 8px;border-radius:12px;font-size:12px;${badgeColor}">
+                ${estado}
+              </span>
+            </td>
+            <td>
+              ${btnAprobar}
+              <button
+                class="btn btn-danger btn-small"
+                onclick="deleteUser(${user.id})"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    // ==============================
+    // CREAR USUARIO (FORM SUBMIT)
+    // ==============================
+    function handleCreateUser(event) {
+      event.preventDefault();
+
+      try {
+        // seguridad por si alguien abre directo esta página
+        assertCanManageUsers();
+      } catch (e) {
+        alert(e.message || "No tiene permisos para gestionar usuarios.");
+        return;
+      }
+
+      const username = document
+        .getElementById("newUsername")
+        .value.trim();
+      const password = document.getElementById("newPassword").value;
+      const role = document.getElementById("newRole").value;
+      const email = document.getElementById("newEmail").value.trim();
+
+      if (!username || !password || !role) {
+        alert("Complete usuario, contraseña y rol.");
+        return;
+      }
+
+      let users = getUsers();
+
+      // Evitar duplicados por nombre de usuario
+      if (
+        users.find(
+          (u) => u.username.toLowerCase() === username.toLowerCase()
+        )
+      ) {
+        alert("Ya existe un usuario con ese nombre.");
+        return;
+      }
+
+      const newId =
+        users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 100;
+
+      const esMaestro = isMasterAdmin();
+      const creador =
+        sessionStorage.getItem("cicUser") ||
+        sessionStorage.getItem("currentUser") ||
+        "desconocido";
+
+      const newUser = {
+        id: newId,
+        username,
+        password, // en real se hashea, acá queda simple
+        role,
+        email: email || null,
+        active: esMaestro, // sólo el maestro lo crea activo
+        status: esMaestro ? "active" : "pending",
+        createdAt: new Date().toISOString(),
+        createdBy: creador,
+      };
+
+      users.push(newUser);
+      saveUsers(users);
+
+      logAudit({
+        action: "CREATE_USER",
+        resource: "users",
+        success: true,
+        details: `username=${username}, role=${role}, createdBy=${creador}, status=${newUser.status}`,
+      });
+
+      if (esMaestro) {
+        alert("✅ Usuario creado y habilitado exitosamente.");
+      } else {
+        alert(
+          "✅ Solicitud de usuario creada.\nUn administrador maestro debe habilitar esta cuenta."
+        );
+      }
+
+      event.target.reset();
+      loadUsers();
+    }
+
+    // ==============================
+    // ELIMINAR USUARIO
+    // ==============================
+    function deleteUserInternal(id) {
+      try {
+        assertCanDeleteRecords();
+      } catch (e) {
+        alert(e.message || "No tiene permisos para eliminar usuarios.");
+        return;
+      }
+
+      if (!confirm("¿Eliminar este usuario?")) return;
+
+      const users = getUsers();
+      const user = users.find((u) => u.id === id);
+      const updated = users.filter((u) => u.id !== id);
+
+      saveUsers(updated);
+
+      logAudit({
+        action: "DELETE_USER",
+        resource: "users",
+        success: true,
+        details: `ID: ${id}, username: ${user ? user.username : "?"}`,
+      });
+
+      alert("Usuario eliminado.");
+      loadUsers();
+    }
+
+    // ==============================
+    // APROBAR USUARIO (SOLO MAESTRO)
+    // ==============================
+    function approveUserInternal(id) {
+      if (!isMasterAdmin()) {
+        alert("Solo el administrador maestro puede aprobar usuarios.");
+        return;
+      }
+
+      let users = getUsers();
+      const idx = users.findIndex((u) => u.id === id);
+      if (idx === -1) return;
+
+      users[idx].active = true;
+      users[idx].status = "active";
+      users[idx].approvedAt = new Date().toISOString();
+      users[idx].approvedBy =
+        sessionStorage.getItem("cicUser") ||
+        sessionStorage.getItem("currentUser") ||
+        "maestro";
+
+      saveUsers(users);
+
+      logAudit({
+        action: "APPROVE_USER",
+        resource: "users",
+        success: true,
+        details: `ID: ${id}, username: ${users[idx].username}`,
+      });
+
+      alert("✅ Usuario aprobado y habilitado.");
+      loadUsers();
+    }
+
+    // ==============================
+    // LOGOUT
+    // ==============================
+    function logoutInternal() {
+      sessionStorage.clear();
+      window.location.href = "../index.html";
+    }
+
+    // ==============================
+    // INICIALIZACIÓN
+    // ==============================
+    document.addEventListener("DOMContentLoaded", () => {
+      // Inicializar permisos de la página (oculta link a quien no corresponde)
+      initPagePermissions("user-management");
+
+      // Cargar listado actual
+      loadUsers();
+
+      // Handler de creación
+      document
+        .getElementById("userForm")
+        .addEventListener("submit", handleCreateUser);
+    });
+
+    // Exponer funciones para los botones inline
+    window.deleteUser = deleteUserInternal;
+    window.approveUser = approveUserInternal;
+    window.logout = logoutInternal;
+  </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario - CIC Pavón Arriba</title>
+  <link rel="stylesheet" href="../Styles/formulario.css">
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png">
+</head>
+
+<body>
+  <div class="volver-container">
+    <a href="../index.html" class="btn-volver">Volver al inicio</a>
+  </div>
+
+  <div class="container">
+    <a href="../index.html">
+      <img src="../Images/PavonArriba.jpg" alt="Icono Formulario" class="icono-form">
+    </a>
+    
+    <h2>Complete el formulario</h2>
+
+    <form id="formulario">
+      <fieldset>
+        <legend>Grupo familiar (Household)</legend>
+        <div class="row">
+          <div class="col-6">
+            <label for="familiaExistente">¿Agregar a una familia existente?</label>
+            <select id="familiaExistente">
+              <option value="">— Crear nueva familia —</option>
+            </select>
+            <div class="hint">Seleccione una familia existente o cree una nueva</div>
+          </div>
+        </div>
+        <div class="row" id="nuevaFamiliaSection">
+          <div class="col-3">
+            <label for="hhId">ID de Household (automático)</label>
+            <input id="hhId" placeholder="Se genera automáticamente" readonly style="background: #f5f5f5;" />
+            <div class="hint">Este campo se completa solo</div>
+          </div>
+          <div class="col-3">
+            <label for="grupoFamiliar">Nombre de grupo familiar</label>
+            <input id="grupoFamiliar" placeholder="p. ej. Gómez-Pérez" />
+          </div>
+          <div class="col-2">
+            <label for="vivienda">Vivienda</label>
+            <select id="vivienda">
+              <option value="">—</option>
+              <option>Propia</option>
+              <option>Alquilada</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="col-2"><label for="calle">Calle</label><input id="calle" /></div>
+          <div class="col-1"><label for="numero">Número</label><input id="numero" /></div>
+          <div class="col-2"><label for="barrio">Barrio</label><input id="barrio" /></div>
+          <div class="col-2"><label for="ciudad">Localidad</label>
+          <select id="sexo">
+              <option value="">—</option>
+              <option>Pavón Arriba</option>
+              <option>Otro</option>
+            </select></div>
+          <div class="col-2"><label for="provincia">Provincia</label><select id="sexo">
+              <option value="">—</option>
+              <option>Santa Fe</option>
+              <option>Otro</option>
+            </select>
+          </div>     
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Persona</legend>
+        <div class="row">
+          <div class="col-2">
+            <label for="relacionHogar">Relación</label>
+            <select id="relacionHogar">
+              <option value="">—</option>
+              <option>Padre</option>
+              <option>Madre</option>
+              <option>Hijo</option>
+              <option>Hija</option>
+              <option>Abuelo</option>
+              <option>Abuela</option>
+              <option>Tío</option>
+              <option>Tía</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="col-2"><label for="nombre">Nombre</label><input id="nombre" required /></div>
+          <div class="col-2"><label for="apellido">Apellido</label><input id="apellido" required /></div>
+          <div class="col-2">
+            <label for="dni">DNI</label>
+            <input id="dni" type="text" placeholder="12345678" maxlength="8" />
+          </div>
+          <div class="col-3">
+            <label for="cuit">CUIT/CUIL</label>
+            <input id="cuit" type="text" placeholder="20-12345678-9" maxlength="13" />
+            <div class="hint">Formato: XX-XXXXXXXX-X</div>
+          </div>
+          <div class="col-2"><label for="fechaNacimiento">Fecha Nac.</label><input id="fechaNacimiento" type="date"/></div>
+          <div class="col-2">
+            <label for="sexo">Sexo</label>
+            <select id="sexo">
+              <option value="">—</option>
+              <option>Masculino</option>
+              <option>Femenino</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="col-3"><label for="email">Correo</label><input id="email" type="email" /></div>
+          <div class="col-3"><label for="telefono">Teléfono</label><input id="telefono" /></div>
+          <div class="col-3"><label for="ocupacion">Ocupación</label>
+            <select id="sexo">
+              <option value="">—</option>
+              <option>Empleado/a</option>
+              <option>Monotributista</option>
+              <option>Jubilado/a</option>
+              <option>Otro</option>
+            </select>
+          <div class="col-3">
+            <label for="estadoCivil">Estado civil</label>
+            <select id="estadoCivil">
+              <option value="">-</option>
+              <option>Soltero/a</option>
+              <option>Casado/a</option>
+              <option>Concubinato</option>
+              <option>Divorciado/a</option>
+              <option>Viudo/a</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Educación</legend>
+        <div class="row">
+          <div class="col-2">
+            <label for="nivelActual">Nivel actual</label>
+            <select id="nivelActual">
+              <option value="">-</option>
+              <option>Ninguno</option>
+              <option>Primario</option>
+              <option>Secundario</option>
+              <option>Terciario</option>
+              <option>Universitario</option>
+              <option>Posgrado</option>
+            </select>
+          </div>
+          <div class="col-2"><label for="institucion">Institución</label><input id="institucion" /></div>
+          <div class="col-2">
+            <label for="estadoEdu">Estado</label>
+            <select id="estadoEdu">
+              <option value="">—</option>
+              <option>Cursando</option>
+              <option>Completo</option>
+              <option>Incompleto</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label for="anteriores">Estudios anteriores (uno por línea: nivel | institución | estado)</label>
+            <textarea id="anteriores" rows="3" placeholder="secundario | Esc. Nº 321 | completo&#10;curso | Taller X | completo"></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Discapacidad / Beneficio / Obra social</legend>
+        <div class="row">
+          <div class="col-2">
+            <select id="tieneDis">
+  <option value="">—</option>
+  <option value="false">No</option>
+  <option value="true">Sí</option>
+</select>
+          </div>
+          <div class="col-2"><label for="tipoDis">Tipo</label><input id="tipoDis" placeholder="Auditiva, Visual, Motriz, ..." /></div>
+          <div class="col-2">
+            <label for="tratDis">Tratamiento médico</label>
+            <select id="tratDis">
+              <option value="">—</option>
+              <option value="false">No</option>
+              <option value="true">Sí</option>
+            </select>
+          </div>
+          <div class="col-2">
+            <label for="conCUD">¿Con CUD?</label>
+            <select id="conCUD">
+              <option value="">—</option>
+              <option value="false">No</option>
+              <option value="true">Sí</option>
+            </select>
+          </div>
+          <div class="col-2"><label for="cudVto">Vencimiento CUD</label><input id="cudVto" type="date" /></div>
+
+          <div class="col-2">
+            <label for="tieneBen">¿Plan / Beneficio?</label>
+            <select id="tieneBen">
+              <option value="">—</option>
+              <option value="false">No</option>
+              <option value="true">Sí</option>
+            </select>
+          </div>
+          <div class="col-2"><label for="nomBen">Nombre plan</label><input id="nomBen" placeholder="AUH, Progresar..." /></div>
+          <div class="col-2"><label for="orgBen">Organismo</label><input id="orgBen" placeholder="ANSES, MDS..." /></div>
+          <div class="col-2">
+            <label for="estBen">Estado</label>
+            <select id="estBen">
+              <option value="">—</option>
+              <option>Activo</option>
+              <option>Suspendido</option>
+              <option>Finalizado</option>
+            </select>
+          </div>
+
+          <div class="col-2">
+            <label for="tieneOS">¿Obra social?</label>
+            <select id="tieneOS">
+              <option value="">—</option>
+              <option value="false">No</option>
+              <option value="true">Sí</option>
+            </select>
+          </div>
+          <div class="col-2"><label for="nomOS">Nombre OS</label><input id="nomOS" placeholder="IAPOS, PAMI..." /></div>
+        </div>
+      </fieldset>
+
+      <div class="row">
+        <div class="col-3"><button class="ghost" type="reset">Reiniciar Formulario</button></div>
+        <div class="col-3"><button class="primary" type="submit">Guardar</button></div>
+      </div>
+      <p id="status" class="hint"></p>
+    </form>
+  </div>
+
+  <script type="module" src="../JavaScript/app.js"></script>
+
+  <footer>
+    &copy; 2024 CIC Pavón Arriba - Todos los derechos reservados.
+  </footer>
+</body>
+
+</html>

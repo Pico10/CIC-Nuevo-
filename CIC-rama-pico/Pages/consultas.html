@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Consultas - CIC</title>
+  <link rel="stylesheet" href="../Styles/admin.css">
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png">
+</head>
+
+<body>
+  <div class="header">
+    <h1>Gestión de Consultas y Casos - CIC</h1>
+    <nav class="nav-links">
+      <a href="../index.html">Inicio</a>
+      <a href="admin.html">Panel Admin</a>
+      <a href="formulario.html">Nuevo Registro</a>
+      <a href="consultas.html" style="background: rgba(255,255,255,0.2);">Consultas/Casos</a>
+      <a href="profesionales.html">Profesionales</a>
+      <a href="#" onclick="mostrarModalExportacion('consultas')">📊 Exportar</a>
+      <a href="#" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); border-radius: 4px;">Cerrar Sesión</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- TARJETAS DE ESTADISTICAS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalConsultas">0</div>
+        <div class="stat-label">Total Consultas</div>
+      </div>
+      <div class="stat-card" style="background:#fff3cd;">
+        <div class="stat-number" id="consultasPendientes">0</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+      <div class="stat-card" style="background:#cfe2ff;">
+        <div class="stat-number" id="consultasEnProceso">0</div>
+        <div class="stat-label">En Proceso</div>
+      </div>
+      <div class="stat-card" style="background:#d1e7dd;">
+        <div class="stat-number" id="consultasResueltas">0</div>
+        <div class="stat-label">Resueltas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="consultasUrgentes">0</div>
+        <div class="stat-label">Urgentes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="consultasDerivacion">0</div>
+        <div class="stat-label">Por Derivación</div>
+      </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+      <div class="controls-row">
+        <input id="searchInput" class="search-box" type="text" placeholder="Buscar por persona, motivo, profesional...">
+
+        <select class="filter-select" id="filterEstado">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en_proceso">En Proceso</option>
+          <option value="notificado">Notificado</option>
+          <option value="resuelto">Resuelto</option>
+          <option value="cerrado">Cerrado</option>
+        </select>
+
+        <select class="filter-select" id="filterTipo">
+          <option value="">Todos los tipos</option>
+          <option value="espontanea">Demanda Espontánea</option>
+          <option value="derivacion">Derivación Institucional</option>
+        </select>
+
+        <select class="filter-select" id="filterPrioridad">
+          <option value="">Todas las prioridades</option>
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+          <option value="urgente">Urgente</option>
+        </select>
+
+        <select class="filter-select" id="filterProfesional">
+          <option value="">Todos los profesionales</option>
+        </select>
+
+        <button class="btn btn-primary" onclick="loadConsultas()">Actualizar</button>
+
+        <a class="btn btn-primary" href="consultas-form.html" data-role-write="true" style="text-decoration:none;">+ Nueva Consulta</a>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="data-table">
+      <div class="table-header">
+        <h3>Registro de Consultas</h3>
+        <span id="resultCount">0 resultados</span>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Persona</th>
+              <th>Motivo</th>
+              <th>Tipo</th>
+              <th>Profesional</th>
+              <th>Estado</th>
+              <th>Prioridad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody id="consultasTableBody">
+            <tr><td colspan="8" class="loading">Cargando consultas...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CAMBIO ESTADO -->
+  <div id="estadoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff;padding:30px;border-radius:10px;max-width:500px;width:90%;">
+      <h3>Cambiar Estado de Consulta</h3>
+
+      <label>Nuevo Estado:</label>
+      <select id="nuevoEstado" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:5px;">
+        <option value="pendiente">Pendiente</option>
+        <option value="en_proceso">En Proceso</option>
+        <option value="notificado">Notificado</option>
+        <option value="resuelto">Resuelto</option>
+        <option value="cerrado">Cerrado</option>
+      </select>
+
+      <label style="margin-top:20px;">Observación (opcional):</label>
+      <textarea id="observacionEstado" rows="3" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:5px;"></textarea>
+
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+        <button onclick="cerrarModalEstado()" class="btn btn-secondary">Cancelar</button>
+        <button onclick="confirmarCambioEstado()" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRERÍAS EXPORTACIÓN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- SISTEMA EXPORTACIÓN -->
+  <script src="../JavaScript/export-system.js"></script>
+
+  <!-- LÓGICA CONSULTAS -->
+  <script type="module" src="../JavaScript/consultas.js"></script>
+
+  <!-- PERMISOS -->
+  <script type="module">
+    import { initPagePermissions } from "../JavaScript/permissions.js";
+    initPagePermissions("consultas-list");
+  </script>
+
+  <script>
+    function handleLogout() {
+      sessionStorage.clear();
+      window.location.href = "admin-login.html";
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo Profesional - CIC</title>
+
+  <!-- Estilos del panel (header + nav) -->
+  <link rel="stylesheet" href="../Styles/admin.css">
+  <!-- Estilos del formulario -->
+  <link rel="stylesheet" href="../Styles/formulario.css">
+
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png">
+</head>
+<body>
+  <div class="header">
+    <h1>Nuevo Profesional - CIC</h1>
+    <nav class="nav-links">
+      <a href="../index.html">Inicio</a>
+      <a href="admin.html">Panel Admin</a>
+      <a href="formulario.html">Nuevo Registro</a>
+      <a href="consultas.html">Consultas/Casos</a>
+      <a href="profesionales.html">Profesionales</a>
+      <a href="#" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); border-radius: 4px; padding:4px 8px;">Cerrar Sesión</a>
+    </nav>
+  </div>
+
+  <div class="container" style="max-width: 700px; margin-top: 30px;">
+    <h2>Alta de Profesional</h2>
+
+    <form id="profesionalForm">
+      <fieldset>
+        <legend>Datos del profesional</legend>
+
+        <div class="row">
+          <div class="col-6">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" required>
+          </div>
+
+          <div class="col-6">
+            <label for="apellido">Apellido</label>
+            <input id="apellido" required>
+          </div>
+
+          <div class="col-6">
+            <label for="dni">DNI</label>
+            <input id="dni" type="text" maxlength="8" placeholder="12345678" required>
+          </div>
+
+          <div class="col-6">
+            <label for="especialidad">Especialidad</label>
+            <select id="especialidad" required>
+              <option value="">Seleccione...</option>
+              <option value="Trabajador Social">Trabajador Social</option>
+              <option value="Psicólogo">Psicólogo</option>
+              <option value="Enfermero">Enfermero</option>
+              <option value="Abogado">Abogado</option>
+              <option value="Administrativo">Administrativo</option>
+              <option value="Coordinador">Coordinador</option>
+            </select>
+          </div>
+
+          <div class="col-6">
+            <label for="matricula">Matrícula</label>
+            <input id="matricula" placeholder="Opcional">
+          </div>
+
+          <div class="col-6">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="profesional@ejemplo.com">
+          </div>
+
+          <div class="col-6">
+            <label for="telefono">Teléfono</label>
+            <input id="telefono" placeholder="341..." required>
+          </div>
+
+          <div class="col-12">
+            <label for="horarios">Horarios de atención</label>
+            <input id="horarios" placeholder="Ej: Lun a Vie 8 a 14">
+          </div>
+
+          <div class="col-6">
+            <label for="rolSistema">Rol en el sistema</label>
+            <select id="rolSistema" required>
+              <option value="operador">Operador</option>
+              <option value="profesional">Profesional</option>
+              <option value="lectura">Solo lectura</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="row">
+        <div class="col-6">
+          <a href="profesionales.html" class="btn-volver" style="width:100%;text-align:center;">Cancelar</a>
+        </div>
+        <div class="col-6">
+          <button type="submit" class="primary" style="width:100%;">Guardar Profesional</button>
+        </div>
+      </div>
+
+      <p id="statusProfesional" class="hint"></p>
+    </form>
+  </div>
+
+  <footer>
+    &copy; 2024 CIC Pavón Arriba - Todos los derechos reservados.
+  </footer>
+
+  <!-- Lógica de guardado de profesional -->
+  <script type="module" src="../JavaScript/profesionales-form.js"></script>
+
+  <!-- Permisos -->
+  <script type="module">
+    import { initPagePermissions } from "../JavaScript/permissions.js";
+    initPagePermissions("form-profesionales");
+  </script>
+
+  <script>
+    function handleLogout() {
+      sessionStorage.clear();
+      window.location.href = "admin-login.html";
+    }
+  </script>
+</body>
+</html>

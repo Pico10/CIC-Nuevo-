@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Profesionales - CIC</title>
+
+  <link rel="stylesheet" href="../Styles/admin.css">
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png">
+</head>
+
+<body>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Gestión de Profesionales - CIC</h1>
+    <nav class="nav-links">
+      <a href="../index.html">Inicio</a>
+      <a href="admin.html">Panel Admin</a>
+      <a href="formulario.html">Nuevo Registro</a>
+      <a href="consultas.html">Consultas/Casos</a>
+      <a href="profesionales.html" style="background: rgba(255,255,255,0.2);">Profesionales</a>
+      <a href="#" onclick="mostrarModalExportacion('profesionales')">📊 Exportar</a>
+      <a href="#" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); border-radius: 4px;">Cerrar Sesión</a>
+    </nav>
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="container">
+
+    <!-- ESTADÍSTICAS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalProfesionales">0</div>
+        <div class="stat-label">Total Profesionales</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="profesionalesActivos">0</div>
+        <div class="stat-label">Activos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="casosAsignados">0</div>
+        <div class="stat-label">Casos Asignados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="casosResueltos">0</div>
+        <div class="stat-label">Casos Resueltos</div>
+      </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+      <div class="controls-row">
+        <input type="text" class="search-box" id="searchInput"
+               placeholder="Buscar por nombre, especialidad o matrícula...">
+
+        <select class="filter-select" id="filterEspecialidad">
+          <option value="">Todas las especialidades</option>
+          <option value="Trabajador Social">Trabajador Social</option>
+          <option value="Psicólogo">Psicólogo</option>
+          <option value="Enfermero">Enfermero</option>
+          <option value="Abogado">Abogado</option>
+          <option value="Administrativo">Administrativo</option>
+          <option value="Coordinador">Coordinador</option>
+        </select>
+
+        <select class="filter-select" id="filterEstado">
+          <option value="">Todos los estados</option>
+          <option value="true">Activos</option>
+          <option value="false">Inactivos</option>
+        </select>
+
+        <button class="btn btn-primary" onclick="loadProfesionales()">Actualizar</button>
+
+        <a href="profesionales-form.html"
+           class="btn btn-primary"
+           style="text-decoration: none;"
+           data-role-write="true">
+          + Agregar Profesional
+        </a>
+      </div>
+    </div>
+
+    <!-- TABLA PRINCIPAL -->
+    <div class="data-table">
+      <div class="table-header">
+        <h3>Profesionales del CIC</h3>
+        <span id="resultCount">0 resultados</span>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre Completo</th>
+              <th>Especialidad</th>
+              <th>Matrícula</th>
+              <th>Email</th>
+              <th>Teléfono</th>
+              <th>Horarios</th>
+              <th>Casos Activos</th>
+              <th>Casos Resueltos</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody id="profesionalesTableBody">
+            <tr>
+              <td colspan="10" class="loading">Cargando profesionales...</td>
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRERÍAS DE EXPORTACIÓN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- SISTEMA DE EXPORTACIÓN -->
+  <script src="../JavaScript/export-system.js"></script>
+
+  <!-- JS PRINCIPAL (carga de profesionales) -->
+  <script type="module" src="../JavaScript/profesionales.js"></script>
+
+
+  <!-- Permisos -->
+  <script type="module">
+    import { initPagePermissions } from "../JavaScript/permissions.js";
+    initPagePermissions("profesionales-list");
+  </script>
+
+  <!-- Logout compartido -->
+  <script>
+    function handleLogout() {
+      sessionStorage.clear();
+      window.location.href = "admin-login.html";
+    }
+  </script>
+
+</body>
+</html>

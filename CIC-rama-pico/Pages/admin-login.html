@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Administrativo - CIC</title>
+  <link rel="stylesheet" href="../Styles/formulario.css">
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png">
+  <style>
+    .login-container {
+      max-width: 450px;
+      margin: 100px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .login-header img {
+      max-width: 150px;
+      margin-bottom: 20px;
+    }
+    
+    .login-header h2 {
+      color: #333;
+      margin: 0;
+    }
+    
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    
+    .form-group input {
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #368dff;
+    }
+    
+    .login-button {
+      background: #368dff;
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .login-button:hover {
+      background: #2870d4;
+    }
+    
+    .error-message {
+      background: #f8d7da;
+      color: #842029;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+    
+    .success-message {
+      background: #d1e7dd;
+      color: #0f5132;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+    
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .back-link a {
+      color: #666;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    .back-link a:hover {
+      color: #368dff;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <img src="../Images/PavonArriba.jpg" alt="Logo CIC">
+      <h2>Acceso al Sistema</h2>
+      <p style="color: #666; font-size: 14px;">Centro de Integración Comunitaria</p>
+    </div>
+    
+    <div class="error-message" id="errorMessage"></div>
+    <div class="success-message" id="successMessage"></div>
+    
+    <form class="login-form" id="loginForm">
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <input type="text" id="username" required autofocus placeholder="Ingrese su usuario">
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" required placeholder="Ingrese su contraseña">
+      </div>
+      
+      <button type="submit" class="login-button">Iniciar Sesión</button>
+    </form>
+    
+    <div class="back-link">
+      <a href="../index.html">← Volver al inicio</a>
+    </div>
+  </div>
+
+  <script>
+    // Usuarios “fijos”
+    const hardcodedUsers = {
+      superadmin:    { password: "cicmaster", role: "admin",    master: true }, // maestro
+      admin:         { password: "cic2024",   role: "admin",    master: true },
+      administrador: { password: "pavon123",  role: "admin",    master: false },
+      operador1:     { password: "op123",     role: "operador", master: false },
+      consulta:      { password: "read123",   role: "lectura",  master: false },
+    };
+
+    function showError(message) {
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+      setTimeout(() => { errorEl.style.display = 'none'; }, 4000);
+    }
+
+    function showSuccess(message) {
+      const successEl = document.getElementById('successMessage');
+      successEl.textContent = message;
+      successEl.style.display = 'block';
+      setTimeout(() => { successEl.style.display = 'none'; }, 3000);
+    }
+
+    // Busca usuarios creados en localStorage (cicUsers)
+    function checkCreatedUser(username, password) {
+      const stored = localStorage.getItem('cicUsers');
+      if (!stored) return null;
+      
+      try {
+        const createdUsers = JSON.parse(stored);
+        const user = createdUsers.find(u => 
+          u.username.toLowerCase() === username.toLowerCase() &&
+          u.password === password
+        );
+        
+        if (user) {
+          if (!user.active) {
+            return { error: 'Su cuenta está inactiva. Contacte al administrador.' };
+          }
+          return {
+            username: user.username,
+            role: user.role,
+            email: user.email
+          };
+        }
+      } catch (e) {
+        console.error('Error verificando usuarios creados:', e);
+      }
+      return null;
+    }
+
+    function updateLastLogin(username) {
+      const stored = localStorage.getItem('cicUsers');
+      if (!stored) return;
+      
+      try {
+        let createdUsers = JSON.parse(stored);
+        const userIndex = createdUsers.findIndex(u => 
+          u.username.toLowerCase() === username.toLowerCase()
+        );
+        if (userIndex !== -1) {
+          createdUsers[userIndex].lastLogin = new Date().toISOString();
+          localStorage.setItem('cicUsers', JSON.stringify(createdUsers));
+        }
+      } catch (e) {
+        console.error('Error actualizando último login:', e);
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      
+      // 1) Usuarios fijos
+      if (hardcodedUsers[username] && hardcodedUsers[username].password === password) {
+        const role = hardcodedUsers[username].role;
+        const isMaster = !!hardcodedUsers[username].master;
+
+        // sesión “vieja”
+        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.setItem("currentUser", username);
+        sessionStorage.setItem("userRole", role);
+        if (role === "admin") {
+          sessionStorage.setItem("isAdmin", "true");
+          sessionStorage.setItem("adminUser", username);
+        }
+
+        // sesión nueva
+        sessionStorage.setItem("cicUser", username);
+        sessionStorage.setItem("cicRole", role);
+        sessionStorage.setItem("cicMaster", isMaster ? "true" : "false");
+
+        showSuccess("¡Bienvenido! Redirigiendo...");
+        setTimeout(() => {
+          window.location.href = "admin.html";
+        }, 1000);
+        return;
+      }
+
+      // 2) Usuarios creados por el admin
+      const createdUser = checkCreatedUser(username, password);
+      if (createdUser) {
+        if (createdUser.error) {
+          showError(createdUser.error);
+          return;
+        }
+        const role = createdUser.role;
+
+        // Sesión “vieja”
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('currentUser', createdUser.username);
+        sessionStorage.setItem('userRole', role);
+        if (role === 'admin') {
+          sessionStorage.setItem('isAdmin', 'true');
+          sessionStorage.setItem('adminUser', createdUser.username);
+        }
+
+        // Sesión nueva
+        sessionStorage.setItem('cicUser', createdUser.username);
+        sessionStorage.setItem('cicRole', role);
+
+        updateLastLogin(createdUser.username);
+
+        showSuccess('¡Bienvenido! Redirigiendo...');
+        setTimeout(() => { window.location.href = 'admin.html'; }, 1000);
+        return;
+      }
+      
+      // 3) Error
+      showError('Usuario o contraseña incorrectos');
+    });
+
+    // Si ya está logueado, no mostrar login
+    window.addEventListener('DOMContentLoaded', function() {
+      const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+      if (isLoggedIn === 'true') {
+        window.location.href = 'admin.html';
+      }
+    });
+  </script>
+</body>
+</html>

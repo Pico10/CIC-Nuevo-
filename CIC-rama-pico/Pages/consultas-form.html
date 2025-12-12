@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva Consulta - CIC</title>
+  <link rel="stylesheet" href="../Styles/formulario.css">
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png">
+</head>
+
+<body>
+  <div class="volver-container">
+    <a href="consultas.html" class="btn-volver">← Volver a Consultas</a>
+  </div>
+
+  <div class="container">
+    <a href="../index.html">
+      <img src="../Images/PavonArriba.jpg" alt="Icono CIC" class="icono-form">
+    </a>
+    
+    <h2>Registrar Nueva Consulta</h2>
+
+    <form id="consultaForm">
+      <!-- PERSONA -->
+      <fieldset>
+        <legend>Persona que Consulta</legend>
+        <div class="row">
+          <div class="col-6">
+            <label for="personId">Buscar Persona Registrada *</label>
+            <select id="personId" required>
+              <option value="">— Seleccione una persona —</option>
+            </select>
+            <div class="hint">Seleccione la persona del registro existente</div>
+          </div>
+          <div class="col-6">
+            <div id="personInfo" style="padding: 15px; background: #f8f9fa; border-radius: 5px; margin-top: 28px; display: none;">
+              <strong>Datos de la persona:</strong>
+              <div id="personDetails" style="margin-top: 10px; font-size: 14px;"></div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- DATOS DE LA CONSULTA -->
+      <fieldset>
+        <legend>Datos de la Consulta</legend>
+        <div class="row">
+          <div class="col-3">
+            <label for="tipo">Tipo de Consulta *</label>
+            <select id="tipo" required>
+              <option value="">— Seleccione —</option>
+              <option value="espontanea">Demanda Espontánea</option>
+              <option value="derivacion">Derivación Institucional</option>
+            </select>
+          </div>
+          <div class="col-3" id="derivadoPorContainer" style="display: none;">
+            <label for="derivadoPor">Derivado por *</label>
+            <input id="derivadoPor" type="text" placeholder="Ej: Hospital Iturraspe, Escuela N° 123" />
+            <div class="hint">Institución que deriva</div>
+          </div>
+          <div class="col-3">
+            <label for="prioridad">Prioridad *</label>
+            <select id="prioridad" required>
+              <option value="media">Media</option>
+              <option value="baja">Baja</option>
+              <option value="alta">Alta</option>
+              <option value="urgente">Urgente</option>
+            </select>
+          </div>
+          <div class="col-3">
+            <label for="profesionalAsignado">Asignar a Profesional</label>
+            <select id="profesionalAsignado">
+              <option value="">— Sin asignar —</option>
+            </select>
+            <div class="hint">Opcional - Se puede asignar después</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-3">
+            <label for="motivo">Motivo de Consulta *</label>
+            <select id="motivo" required>
+              <option value="">— Seleccione —</option>
+              <option value="Ayuda alimentaria">Ayuda alimentaria</option>
+              <option value="Trámite de CUD">Trámite de CUD</option>
+              <option value="Trámite de pensión">Trámite de pensión</option>
+              <option value="Derivación a salud">Derivación a salud</option>
+              <option value="Asesoramiento legal">Asesoramiento legal</option>
+              <option value="Búsqueda laboral">Búsqueda laboral</option>
+              <option value="Apoyo escolar">Apoyo escolar</option>
+              <option value="Violencia de género">Violencia de género</option>
+              <option value="Problemas de vivienda">Problemas de vivienda</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="col-3" id="otroMotivoContainer" style="display: none;">
+            <label for="otroMotivo">Especifique el motivo *</label>
+            <input id="otroMotivo" type="text" placeholder="Ej: Documentación, Trámite jubilación..." />
+            <div class="hint">Escriba el motivo específico</div>
+          </div>
+          <div class="col-9">
+            <label for="descripcion">Descripción Detallada *</label>
+            <textarea id="descripcion" rows="4" required placeholder="Describa la situación y necesidades de la familia..."></textarea>
+            <div class="hint">Sea lo más específico posible para facilitar el seguimiento</div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- OBSERVACIONES INICIALES -->
+      <fieldset>
+        <legend>Observaciones Iniciales (Opcional)</legend>
+        <div class="row">
+          <div class="col-12">
+            <label for="observacionInicial">Notas o Comentarios</label>
+            <textarea id="observacionInicial" rows="3" placeholder="Agregue cualquier información adicional relevante..."></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- BOTONES -->
+      <div class="row">
+        <div class="col-3">
+          <a href="consultas.html" class="ghost" style="display: inline-block; text-align: center; padding: 12px; text-decoration: none;">Cancelar</a>
+        </div>
+        <div class="col-3">
+          <button class="primary" type="submit">Registrar Consulta</button>
+        </div>
+      </div>
+      <p id="status" class="hint"></p>
+    </form>
+  </div>
+
+  <footer>
+    &copy; 2024 CIC Pavón Arriba - Todos los derechos reservados.
+  </footer>
+
+  <!-- Script principal del formulario de consultas -->
+  <script type="module" src="../JavaScript/consultas-forms.js"></script>
+
+  <!-- Permisos -->
+  <script type="module">
+    import { initPagePermissions } from "../JavaScript/permissions.js";
+    initPagePermissions("form-consultas");
+  </script>
+</body>
+
+</html>

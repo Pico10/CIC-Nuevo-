@@ -1,0 +1,166 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #368dff;
+  margin: 0;
+  padding: 0;
+}
+
+.form-con-boton {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap; /* para que no se rompa en pantallas chicas */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.btn-volver {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 12px 24px;
+  background-color: #45a049;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: 0.3s;
+  align-self: flex-start;
+}
+
+.btn-volver:hover {
+  background-color: #fff;
+  color: #45a049;
+  transform: scale(1.05);
+}
+
+.container {
+  max-width: 700px;
+  margin: 30px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.icono-form {
+  width: 80px;
+  height: auto;
+  display: block;
+  margin: 10px auto; /* centrado automático */
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+}
+
+fieldset {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+legend {
+  font-weight: bold;
+  padding: 0 10px;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+input,
+select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 100%;
+  margin-top: 5px;
+}
+
+button {
+  padding: 12px;
+  background: #4caf50;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%; /* ocupa todo el ancho en móviles */
+}
+
+button:hover {
+  background-color: #368dff;
+  transform: scale(1.05);
+}
+
+.preview {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.preview img {
+  max-width: 200px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+footer {
+  text-align: center;
+  padding: 15px 0;
+  background-color: #ffffff;
+  color: #000000;
+  margin-top: auto;
+}
+
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  .container {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .btn-volver {
+    width: 100%; /* botón a lo ancho */
+    margin: 10px 0;
+    text-align: center;
+  }
+
+  .icono-form {
+    width: 60px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  h2 {
+    font-size: 18px;
+  }
+
+  input,
+  select {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .preview img {
+    max-width: 150px;
+  }
+}

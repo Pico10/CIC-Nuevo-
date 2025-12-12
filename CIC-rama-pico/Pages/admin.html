@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - CIC</title>
+  <link rel="stylesheet" href="../Styles/admin.css">
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png">
+</head>
+<body>
+  <div class="header">
+    <h1>Panel de Administración - CIC</h1>
+    <nav class="nav-links">
+      <a href="../index.html">Inicio</a>
+      <a href="formulario.html">Nuevo Registro</a>
+      <a href="consultas.html">Consultas/Casos</a>
+      <a href="profesionales.html">Profesionales</a>
+      <a href="user-management.html" id="userManagementLink">Gestión de Usuarios</a>
+      <a href="#" onclick="mostrarModalExportacion('formularios')">📊 Exportar</a>
+      <a href="#" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); border-radius: 4px;">Cerrar Sesión</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalHouseholds">0</div>
+        <div class="stat-label">Grupos Familiares</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalPersons">0</div>
+        <div class="stat-label">Personas Registradas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="averageHouseholdSize">0</div>
+        <div class="stat-label">Promedio por Familia</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalDisabilities">0</div>
+        <div class="stat-label">Con Discapacidad</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalBenefits">0</div>
+        <div class="stat-label">Con Beneficios</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalMinors">0</div>
+        <div class="stat-label">Menores de Edad</div>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <div class="controls-row">
+        <input type="text" class="search-box" id="searchInput" placeholder="Buscar por nombre, apellido, DNI o dirección...">
+
+        <select class="filter-select" id="filterRelation">
+          <option value="">Todas las relaciones</option>
+          <option value="Padre">Padre</option>
+          <option value="Madre">Madre</option>
+          <option value="Hijo">Hijo</option>
+          <option value="Hija">Hija</option>
+          <option value="Abuelo">Abuelo</option>
+          <option value="Abuela">Abuela</option>
+          <option value="Otro">Otro</option>
+        </select>
+
+        <select class="filter-select" id="filterDisability">
+          <option value="">Discapacidad</option>
+          <option value="true">Con discapacidad</option>
+          <option value="false">Sin discapacidad</option>
+        </select>
+
+        <select class="filter-select" id="filterHousehold">
+          <option value="">Todas las familias</option>
+        </select>
+
+        <button class="btn btn-primary" onclick="loadData()">Actualizar</button>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="data-table">
+      <div class="table-header">
+        <h3>Registro de Personas</h3>
+        <div><span id="resultCount">0 resultados</span></div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre Completo</th>
+              <th>DNI</th>
+              <th>Edad</th>
+              <th>Relación</th>
+              <th>Grupo Familiar</th>
+              <th>Dirección</th>
+              <th>Discapacidad</th>
+              <th>Beneficios</th>
+              <th>Fecha Registro</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody">
+            <tr><td colspan="10" class="loading">Cargando datos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="pagination" id="pagination" style="display:none;"></div>
+  </div>
+
+  <!-- Librerías exportación -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Sistema exportación -->
+  <script src="../JavaScript/export-system.js"></script>
+
+  <!-- Lógica admin -->
+  <script type="module" src="../JavaScript/admin.js"></script>
+
+  <!-- Permisos -->
+  <script type="module">
+    import { initPagePermissions } from "../JavaScript/permissions.js";
+    initPagePermissions("admin-panel");
+  </script>
+
+  <script>
+    function handleLogout() {
+      sessionStorage.clear();
+      window.location.href = "admin-login.html";
+    }
+  </script>
+
+</body>
+</html>
