@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Administrativo - CIC</title>
+  <link rel="stylesheet" href="../Styles/formulario.css" />
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png" />
+
+  <style>
+    .login-container {
+      max-width: 450px;
+      margin: 100px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .login-header { text-align: center; margin-bottom: 30px; }
+    .login-header img { max-width: 150px; margin-bottom: 20px; }
+    .login-header h2 { color: #333; margin: 0; }
+    .login-form { display: flex; flex-direction: column; gap: 15px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-weight: 600; color: #333; }
+    .form-group input {
+      padding: 12px; border: 2px solid #ddd; border-radius: 6px;
+      font-size: 15px; outline: none;
+    }
+    .form-group input:focus { border-color: #368dff; }
+    .login-actions {
+      display: flex; gap: 10px; margin-top: 10px; align-items: center;
+      justify-content: space-between; flex-wrap: wrap;
+    }
+    .btn-login {
+      background: #368dff; color: #fff; border: none; padding: 12px 18px;
+      border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 15px;
+      flex: 1; min-width: 140px;
+    }
+    .btn-login:hover { opacity: 0.95; }
+    .btn-back {
+      background: #6c757d; color: #fff; border: none; padding: 12px 18px;
+      border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 15px;
+      flex: 1; min-width: 140px;
+    }
+    .btn-back:hover { opacity: 0.95; }
+    #status { margin-top: 14px; font-size: 14px; color: #333; min-height: 20px; text-align: center; }
+    .hint { margin-top: 10px; font-size: 12.5px; color: #666; text-align: center; line-height: 1.35; }
+  </style>
+</head>
+
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <img src="../Icons/icono-pavon-arriba.jpeg" alt="CIC Pavón Arriba" />
+      <h2>Ingreso al Panel</h2>
+    </div>
+
+    <form id="loginForm" class="login-form" autocomplete="on">
+      <div class="form-group">
+        <label for="email">Email / Usuario</label>
+        <input type="email" id="email" placeholder="ej: admin@cic.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" placeholder="••••••••" required />
+      </div>
+
+      <div class="login-actions">
+        <button type="submit" class="btn-login">Ingresar</button>
+        <button type="button" class="btn-back" id="btnBack">Volver</button>
+      </div>
+
+      <div id="status"></div>
+
+      <div class="hint">
+        ✅ Login con <strong>Firebase Authentication</strong> <br/>     
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { db } from "../JavaScript/firebase.js";
+    import { doc, getDoc, collection, query, where, getDocs } from
+      "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      setPersistence,
+      browserLocalPersistence,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    import { LOCK_KEY, isLogoutLocked } from "../JavaScript/logout.js";
+
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(msg, color = "#333") {
+      const el = $("status");
+      if (!el) return;
+      el.textContent = msg;
+      el.style.color = color;
+    }
+
+    const auth = getAuth();
+
+    function routeByRole(role) {
+      role = (role || "lectura").toLowerCase();
+      if (role === "profesional") {
+        window.location.href = "profesional-panel.html";
+        return;
+      }
+      // admin / operador / lectura => admin.html (ven todo)
+      window.location.href = "admin.html";
+    }
+
+    async function getUserProfile(uid) {
+      const userRef = doc(db, "users", uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) return { source: "users", ...userSnap.data() };
+      return null;
+    }
+
+    async function fallbackProfessionalByEmail(email) {
+      // compat: si no existe users/{uid}, intentamos enlazar con professionals por email
+      try {
+        const q = query(collection(db, "professionals"), where("email", "==", email));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const d = snap.docs[0].data() || {};
+          return {
+            source: "professionals",
+            role: (d.rolSistema || "profesional"),
+            profesionalId: d.profesionalId || snap.docs[0].id,
+            profesionalNombre: `${d.nombre || ""} ${d.apellido || ""}`.trim() || "Profesional",
+            profesionalEspecialidad: d.especialidad || "",
+            profesionalEmail: d.email || email
+          };
+        }
+      } catch (e) {
+        console.warn("fallbackProfessionalByEmail:", e);
+      }
+      return { source: "fallback", role: "lectura", email };
+    }
+
+    function writeSession(profile, email, uid) {
+      const role = (profile?.role || "lectura").toLowerCase();
+
+      sessionStorage.setItem("currentUser", email);
+      sessionStorage.setItem("cicUser", email);
+      sessionStorage.setItem("authUid", uid);
+      sessionStorage.setItem("userRole", role);
+
+      if (profile?.displayName) sessionStorage.setItem("displayName", profile.displayName);
+
+      if (role === "profesional") {
+        sessionStorage.setItem("profesionalLoggedIn", "true");
+        if (profile?.profesionalId) sessionStorage.setItem("profesionalId", profile.profesionalId);
+        if (profile?.profesionalNombre) sessionStorage.setItem("profesionalNombre", profile.profesionalNombre);
+        sessionStorage.setItem("profesionalEmail", email);
+        if (profile?.profesionalEspecialidad) sessionStorage.setItem("profesionalEspecialidad", profile.profesionalEspecialidad);
+      }
+    }
+
+    $("btnBack")?.addEventListener("click", () => {
+      window.location.href = "../index.html";
+    });
+
+    // ✅ Persistencia local
+    await setPersistence(auth, browserLocalPersistence);
+
+    // ✅ Mensaje si venimos de logout manual
+    const params = new URLSearchParams(location.search);
+    if (params.get("loggedOut") === "1") {
+      setStatus("Sesión cerrada. Podés iniciar con otro usuario.", "#333");
+    }
+
+    // ✅ Auto-login SOLO si NO estamos bloqueados por logout
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+
+      if (isLogoutLocked()) {
+        // No autoredirigir
+        setStatus("Sesión previa cerrada. Iniciá sesión manualmente.", "#333");
+        return;
+      }
+
+      try {
+        const email = (user.email || "").toLowerCase();
+        const uid = user.uid;
+
+        let profile = await getUserProfile(uid);
+        if (!profile) profile = await fallbackProfessionalByEmail(email);
+
+        writeSession(profile, email, uid);
+        setStatus("✅ Sesión activa. Redirigiendo...", "green");
+        setTimeout(() => routeByRole(profile.role), 150);
+      } catch (e) {
+        console.warn("Auto-login error:", e);
+      }
+    });
+
+    $("loginForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // ✅ si había lock, lo levantamos al loguear manual
+      try { localStorage.removeItem(LOCK_KEY); } catch (_) {}
+
+      const email = $("email").value.trim().toLowerCase();
+      const password = $("password").value;
+
+      if (!email || !password) {
+        setStatus("Complete email y contraseña.", "red");
+        return;
+      }
+
+      try {
+        setStatus("Ingresando...", "#333");
+
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+
+        let profile = await getUserProfile(uid);
+        if (!profile) profile = await fallbackProfessionalByEmail(email);
+
+        writeSession(profile, email, uid);
+
+        setStatus("✅ Ingreso correcto. Redirigiendo...", "green");
+        setTimeout(() => routeByRole(profile.role), 200);
+
+      } catch (err) {
+        console.error("Login error:", err);
+
+        const code = err?.code || "";
+        if (code.includes("auth/invalid-credential") || code.includes("auth/wrong-password")) {
+          setStatus("❌ Credenciales incorrectas.", "red");
+          return;
+        }
+        if (code.includes("auth/user-not-found")) {
+          setStatus("❌ Usuario no registrado en Auth.", "red");
+          return;
+        }
+        if (code.includes("auth/too-many-requests")) {
+          setStatus("❌ Demasiados intentos. Espere y reintente.", "red");
+          return;
+        }
+
+        setStatus("❌ Error al iniciar sesión: " + (err?.message || err), "red");
+      }
+    });
+  </script>
+</body>
+</html>

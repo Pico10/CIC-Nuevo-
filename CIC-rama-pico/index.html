@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIC - Centro de Integración Comunitaria</title>
+
+  <!-- Como index está en la raíz del proyecto, usamos rutas relativas simples -->
+  <link rel="stylesheet" href="Styles/index.css">
+  <link rel="icon" href="Icons/icono-pavon-arriba.jpeg" type="image/png">
+</head>
+
+<body>
+  <div class="container fondo-principal">
+    <div class="texto-rectangulo">
+      <img
+        src="Images/LOGO-BLANCO-PNG-RGB.webp"
+        alt="Logo CIC"
+        id="logoAdmin"
+        style="width: 120px; margin-bottom: 20px; cursor: pointer;"
+      >
+
+      <h1>AYUDANOS A AYUDARTE</h1>
+      <p>Completá el formulario para registrar a tu familia.</p>
+
+      <div class="botones-principales">
+        <!-- Botón visible al público -->
+        <a href="Pages/formulario.html" class="btn btn-formulario">
+          Completar Formulario
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="mapa">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!4v1758942593134!6m8!1m7!1sqCdeLfTUwOiE7tc-c51Kkg!2m2!1d-33.31079468368811!2d-60.82702682233612!3f180.95817649506793!4f-3.6111578065198273!5f0.7820865974627469"
+      allowfullscreen
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+  </div>
+
+  <div class="logo-abajo">
+    <img src="Images/LOGO-BLANCO-PNG-RGB.webp" alt="Logo" class="icono-form">
+  </div>
+
+  <footer>
+    &copy; Todos los derechos reservados - CIC Pavón Arriba
+  </footer>
+
+  <script>
+    // Doble clic en el logo para ir al LOGIN administrativo
+    let clickCount = 0;
+    let clickTimer = null;
+
+    document.getElementById('logoAdmin').addEventListener('click', function () {
+      clickCount++;
+
+      if (clickCount === 1) {
+        clickTimer = setTimeout(() => {
+          clickCount = 0;
+        }, 800);
+      } else if (clickCount === 2) {
+        clearTimeout(clickTimer);
+        clickCount = 0;
+        window.location.href = "Pages/admin-login.html";
+      }
+    });
+  </script>
+</body>
+</html>

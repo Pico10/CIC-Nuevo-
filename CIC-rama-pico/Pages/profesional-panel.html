@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Profesional - CIC</title>
+  <link rel="stylesheet" href="../Styles/admin.css" />
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png" />
+
+  <style>
+    .nav-toggle{ display:none; align-items:center; gap:10px; margin-left:auto; }
+    .hamb-btn{
+      border:none;
+      background:rgba(255,255,255,0.18);
+      color:#fff;
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:800;
+      line-height:1;
+    }
+    .hamb-btn:hover{ background:rgba(255,255,255,0.25); }
+    .hamb-lines{ display:inline-block; width:18px; height:14px; position:relative; top:1px; }
+    .hamb-lines span{ position:absolute; left:0; right:0; height:2px; background:#fff; border-radius:2px; }
+    .hamb-lines span:nth-child(1){ top:0; }
+    .hamb-lines span:nth-child(2){ top:6px; }
+    .hamb-lines span:nth-child(3){ top:12px; }
+
+    @media (max-width: 760px){
+      .nav-toggle{ display:flex; }
+      .header .nav-links{
+        display:none;
+        width:100%;
+        margin-top:10px;
+        padding-top:10px;
+        border-top:1px solid rgba(255,255,255,0.2);
+      }
+      .header.nav-open .nav-links{ display:flex; }
+      .header .nav-links a{
+        width:100%;
+        justify-content:center;
+        text-align:center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header" id="topHeader">
+    <h1>Panel Profesional - CIC</h1>
+
+    <div class="nav-toggle">
+      <button class="hamb-btn" id="btnHamb" type="button" aria-label="Menú">
+        <span class="hamb-lines" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        Menú
+      </button>
+    </div>
+
+    <nav class="nav-links">
+      <a href="../index.html">Inicio</a>
+
+      <!-- Profesionales pueden ver paneles -->
+      <a href="admin.html">Panel Admin</a>
+      <a href="consultas.html">Consultas/Casos</a>
+      <a href="profesionales.html">Profesionales</a>
+
+      <!-- Pueden editar usuarios pero NO crearlos (lo controla user-management + permissions.js) -->
+      <a href="user-management.html">Gestión de Usuarios</a>
+
+      <a href="#" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); border-radius: 4px;">Cerrar Sesión</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <div class="data-table">
+      <div class="table-header">
+        <h3>Bienvenido/a</h3>
+        <span id="whoami">—</span>
+      </div>
+
+      <div style="padding:16px;">
+        <p style="margin:0;color:#555;">
+          
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ PERMISOS -->
+  <script type="module">
+    import { initPagePermissions } from "../JavaScript/permissions.js";
+    initPagePermissions("profesional-panel");
+
+    const nombre = sessionStorage.getItem("profesionalNombre") || sessionStorage.getItem("displayName") || sessionStorage.getItem("currentUser") || "Profesional";
+    const rol = (sessionStorage.getItem("userRole") || "profesional").toLowerCase();
+    const el = document.getElementById("whoami");
+    if (el) el.textContent = `${nombre} (${rol})`;
+  </script>
+
+  <!-- ✅ LOGOUT REAL -->
+  <script type="module">
+    import { handleLogoutRedirect } from "../JavaScript/logout.js";
+    window.handleLogout = () => handleLogoutRedirect("admin-login.html?loggedOut=1");
+  </script>
+
+  <!-- ✅ Hamburguesa -->
+  <script>
+    (function(){
+      const header = document.getElementById("topHeader");
+      const btn = document.getElementById("btnHamb");
+      if (!header || !btn) return;
+      btn.addEventListener("click", () => header.classList.toggle("nav-open"));
+    })();
+  </script>
+</body>
+</html>

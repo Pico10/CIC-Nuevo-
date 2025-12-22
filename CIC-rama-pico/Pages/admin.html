@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - CIC</title>
+  <link rel="stylesheet" href="../Styles/admin.css">
+  <link rel="icon" href="../Icons/icono-pavon-arriba.jpeg" type="image/png">
+
+  <!-- ✅ CSS SOLO PARA EL PANEL (no toca lo demás) -->
+  <style>
+    .drawer-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      z-index:9998;
+    }
+
+    .drawer{
+      display:none;
+      position:fixed;
+      top:0;
+      right:0;
+      height:100vh;
+      width:420px;
+      max-width:92vw;
+      background:#fff;
+      z-index:9999;
+      box-shadow:-10px 0 30px rgba(0,0,0,.18);
+      border-left:1px solid #e9ecef;
+      overflow:hidden;
+    }
+
+    .drawer-header{
+      padding:16px;
+      background:#f8f9fa;
+      border-bottom:1px solid #dee2e6;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .drawer-title{
+      font-size:16px;
+      font-weight:700;
+      margin:0;
+      color:#333;
+    }
+
+    .drawer-close{
+      border:none;
+      background:transparent;
+      font-size:20px;
+      cursor:pointer;
+      padding:6px 10px;
+      border-radius:8px;
+    }
+    .drawer-close:hover{ background:#e9ecef; }
+
+    .drawer-body{
+      padding:16px;
+      overflow:auto;
+      height:calc(100vh - 62px);
+    }
+
+    .drawer-card{
+      background:#fff;
+      border:1px solid #dee2e6;
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+
+    .drawer-kv{
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap:6px 10px;
+      font-size:14px;
+    }
+    .drawer-kv b{ color:#555; }
+
+    .drawer-section-title{
+      margin:14px 0 8px;
+      font-size:14px;
+      font-weight:800;
+      color:#333;
+    }
+
+    /* ✅ Lista de consultas: máx 5 items visibles y luego scroll */
+    .drawer-consultas{
+      border:1px solid #dee2e6;
+      border-radius:12px;
+      overflow:hidden;
+    }
+    .drawer-consultas-head{
+      background:#f8f9fa;
+      padding:10px 12px;
+      border-bottom:1px solid #dee2e6;
+      font-weight:700;
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .drawer-consultas-list{
+      max-height: 320px;
+      overflow:auto;
+      background:#fff;
+    }
+    .drawer-consulta-item{
+      padding:10px 12px;
+      border-bottom:1px solid #dee2e6;
+      font-size:13px;
+    }
+    .drawer-consulta-item:last-child{ border-bottom:none; }
+    .drawer-consulta-item small{ color:#666; display:block; margin-top:2px; }
+
+    /* ============================
+       ✅ MI CUENTA + RE-AUTH
+       ============================ */
+    .account-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:8px;
+      background:rgba(255,255,255,0.15);
+      border:1px solid rgba(255,255,255,0.15);
+      text-decoration:none;
+      color:#fff;
+      cursor:pointer;
+    }
+    .account-btn:hover{ background:rgba(255,255,255,0.22); }
+
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:10050;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+    }
+    .modal{
+      width:520px;
+      max-width:100%;
+      background:#fff;
+      border-radius:14px;
+      box-shadow:0 10px 40px rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .modal-head{
+      padding:14px 16px;
+      background:#f8f9fa;
+      border-bottom:1px solid #e9ecef;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+    .modal-head h3{ margin:0;font-size:15px;color:#333; }
+    .modal-body{ padding:16px; }
+    .modal-body p{ margin:0 0 12px;color:#555;font-size:13px;line-height:1.4; }
+    .modal-grid{ display:grid;grid-template-columns:1fr;gap:10px; }
+    .modal-grid label{ font-size:13px;font-weight:700;color:#333;display:block;margin-bottom:6px; }
+    .modal-grid input{
+      width:100%;
+      padding:12px;
+      border:2px solid #ddd;
+      border-radius:10px;
+      font-size:14px;
+      outline:none;
+    }
+    .modal-grid input:focus{ border-color:#368dff; }
+    .modal-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      padding:14px 16px;
+      border-top:1px solid #e9ecef;
+      background:#fff;
+      flex-wrap:wrap;
+    }
+    .btn-soft{
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid #dee2e6;
+      background:#f8f9fa;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .btn-soft:hover{ background:#e9ecef; }
+    .btn-primary2{
+      padding:10px 14px;
+      border-radius:10px;
+      border:none;
+      background:#368dff;
+      color:#fff;
+      cursor:pointer;
+      font-weight:800;
+    }
+    .btn-primary2:hover{ opacity:.95; }
+    .mini-status{ min-height:18px;font-size:12.5px;color:#666;margin-top:8px; }
+
+    /* ============================
+       ✅ HAMBURGUESA RESPONSIVE (RECUPERADO)
+       ============================ */
+    .nav-toggle{
+      display:none;
+      align-items:center;
+      gap:10px;
+      margin-left:auto;
+    }
+    .hamb-btn{
+      border:none;
+      background:rgba(255,255,255,0.18);
+      color:#fff;
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:800;
+      line-height:1;
+    }
+    .hamb-btn:hover{ background:rgba(255,255,255,0.25); }
+    .hamb-lines{
+      display:inline-block;
+      width:18px;
+      height:14px;
+      position:relative;
+      top:1px;
+    }
+    .hamb-lines span{
+      position:absolute;
+      left:0;
+      right:0;
+      height:2px;
+      background:#fff;
+      border-radius:2px;
+    }
+    .hamb-lines span:nth-child(1){ top:0; }
+    .hamb-lines span:nth-child(2){ top:6px; }
+    .hamb-lines span:nth-child(3){ top:12px; }
+
+    /* ✅ Responsive general recuperado */
+    .header .nav-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+
+    @media (max-width: 900px){
+      .header h1{ font-size:20px; line-height:1.2; }
+      .controls-row{ flex-wrap:wrap; gap:10px; }
+      .search-box{ width:100%; }
+    }
+
+    @media (max-width: 760px){
+      .nav-toggle{ display:flex; }
+      .header .nav-links{
+        display:none;
+        width:100%;
+        margin-top:10px;
+        padding-top:10px;
+        border-top:1px solid rgba(255,255,255,0.2);
+      }
+      .header.nav-open .nav-links{ display:flex; }
+      .header .nav-links a{
+        width:100%;
+        justify-content:center;
+        text-align:center;
+      }
+      .drawer{ width: 100vw; max-width:100vw; }
+    }
+
+    @media (max-width: 520px){
+      .header{ padding:12px; }
+      .header h1{ font-size:18px; }
+      .container{ padding:12px; }
+      .table-container{ overflow:auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header" id="topHeader">
+    <h1>Panel de Administración - CIC</h1>
+
+    <!-- ✅ Botón hamburguesa -->
+    <div class="nav-toggle">
+      <button class="hamb-btn" id="btnHamb" type="button" aria-label="Menú">
+        <span class="hamb-lines" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        Menú
+      </button>
+    </div>
+
+    <nav class="nav-links" id="mainNav">
+      <a href="../index.html">Inicio</a>
+      <a href="formulario.html">Nuevo Registro</a>
+      <a href="consultas.html">Consultas/Casos</a>
+      <a href="profesionales.html">Profesionales</a>
+
+      <!-- ✅ Profesionales pueden editar usuarios pero no crearlos => ocultamos creación desde user-management (lo maneja permissions.js) -->
+      <a href="user-management.html" id="userManagementLink">Gestión de Usuarios</a>
+
+      <a href="#" onclick="mostrarModalExportacion('formularios')" data-perm="export">📊 Exportar</a>
+
+      <a class="account-btn" href="#" onclick="window.abrirMiCuenta(); return false;">
+        👤 Mi cuenta
+      </a>
+
+      <a href="#" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); border-radius: 4px;">Cerrar Sesión</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalHouseholds">0</div>
+        <div class="stat-label">Grupos Familiares</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalPersons">0</div>
+        <div class="stat-label">Personas Registradas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="averageHouseholdSize">0</div>
+        <div class="stat-label">Promedio personas por Grupo Familiar</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalDisabilities">0</div>
+        <div class="stat-label">Con Discapacidad</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalBenefits">0</div>
+        <div class="stat-label">Con Beneficios</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalMinors">0</div>
+        <div class="stat-label">Menores de Edad</div>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <div class="controls-row">
+        <input type="text" class="search-box" id="searchInput" placeholder="Buscar por nombre, apellido, DNI o dirección...">
+
+        <select class="filter-select" id="filterRelation">
+          <option value="">Todas las relaciones</option>
+          <option value="Padre">Padre</option>
+          <option value="Madre">Madre</option>
+          <option value="Hijo">Hijo</option>
+          <option value="Hija">Hija</option>
+          <option value="Abuelo">Abuelo</option>
+          <option value="Abuela">Abuela</option>
+          <option value="Otro">Otro</option>
+        </select>
+
+        <select class="filter-select" id="filterDisability">
+          <option value="">Discapacidad</option>
+          <option value="true">Con discapacidad</option>
+          <option value="false">Sin discapacidad</option>
+        </select>
+
+        <select class="filter-select" id="filterHousehold">
+          <option value="">Todas las familias</option>
+        </select>
+
+        <button class="btn btn-primary" onclick="loadData()">Actualizar</button>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="data-table">
+      <div class="table-header">
+        <h3>Registro de Personas</h3>
+        <div><span id="resultCount">0 resultados</span></div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre Completo</th>
+              <th>DNI</th>
+              <th>Edad</th>
+              <th>Relación</th>
+              <th>Grupo Familiar</th>
+              <th>Dirección</th>
+              <th>Discapacidad</th>
+              <th>Beneficios</th>
+              <th>Fecha Registro</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody">
+            <tr><td colspan="10" class="loading">Cargando datos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="pagination" id="pagination" style="display:none;"></div>
+  </div>
+
+  <!-- ✅ OVERLAY + DRAWER PERSONA -->
+  <div id="drawerOverlay" class="drawer-overlay" onclick="window.cerrarDrawerPersona()"></div>
+  <aside id="personaDrawer" class="drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <h3 class="drawer-title" id="drawerTitle">Detalle</h3>
+      <button class="drawer-close" onclick="window.cerrarDrawerPersona()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-card" id="drawerPersonaInfo">
+        <div class="loading">Seleccioná una persona para ver el detalle.</div>
+      </div>
+
+      <div class="drawer-section-title">Consultas asociadas</div>
+      <div class="drawer-consultas">
+        <div class="drawer-consultas-head">
+          <span id="drawerConsultasCount">0 consultas</span>
+          <span style="color:#666;font-size:12px;">(máx 5 visibles + scroll)</span>
+        </div>
+        <div class="drawer-consultas-list" id="drawerConsultasList">
+          <div class="drawer-consulta-item">—</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ✅ Mi Cuenta Drawer -->
+  <div id="accountOverlay" class="drawer-overlay" onclick="window.cerrarMiCuenta()"></div>
+  <aside id="accountDrawer" class="drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Mi cuenta</h3>
+      <button class="drawer-close" onclick="window.cerrarMiCuenta()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-card">
+        <div class="drawer-kv">
+          <b>Email</b><span id="accEmail">—</span>
+          <b>UID</b><span id="accUid">—</span>
+          <b>Rol</b><span id="accRole">—</span>
+        </div>
+      </div>
+
+      <div class="drawer-card">
+        <div class="drawer-section-title">Cambios sensibles (requieren re-auth)</div>
+
+        <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="window.abrirModalCambiarEmail()">
+          ✉️ Cambiar email
+        </button>
+
+        <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="window.abrirModalCambiarPassword()">
+          🔒 Cambiar contraseña
+        </button>
+
+        <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="handleLogout()">
+          Cerrar sesión
+        </button>
+      </div>
+
+      <div class="drawer-card" style="background:#fff3cd; border-color:#ffe69c;">
+        <div style="font-size:13px; color:#856404; line-height:1.4;">
+          <b>Nota:</b> Para cambiar email o contraseña, el sistema te pedirá tu contraseña actual.
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ✅ MODAL RE-AUTH -->
+  <div id="reauthOverlay" class="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reauthTitle">
+      <div class="modal-head">
+        <h3 id="reauthTitle">Confirmar identidad</h3>
+        <button class="btn-soft" onclick="window.cerrarReauth()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p id="reauthDesc">Para realizar esta acción, ingresá tu contraseña actual.</p>
+
+        <div class="modal-grid">
+          <div>
+            <label>Email</label>
+            <input id="reauthEmail" type="text" disabled />
+          </div>
+          <div>
+            <label>Contraseña actual</label>
+            <input id="reauthPassword" type="password" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div class="mini-status" id="reauthStatus"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-soft" onclick="window.cerrarReauth()">Cancelar</button>
+        <button class="btn-primary2" id="reauthConfirmBtn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MODAL CAMBIAR EMAIL -->
+  <div id="changeEmailOverlay" class="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h3>Cambiar email</h3>
+        <button class="btn-soft" onclick="window.cerrarCambiarEmail()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>Ingresá el nuevo email. Se pedirá re-auth antes de aplicar el cambio.</p>
+
+        <div class="modal-grid">
+          <div>
+            <label>Nuevo email</label>
+            <input id="newEmailInput" type="email" placeholder="nuevo@email.com" />
+          </div>
+        </div>
+
+        <div class="mini-status" id="changeEmailStatus"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-soft" onclick="window.cerrarCambiarEmail()">Cancelar</button>
+        <button class="btn-primary2" onclick="window.confirmarCambiarEmail()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MODAL CAMBIAR PASSWORD -->
+  <div id="changePassOverlay" class="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h3>Cambiar contraseña</h3>
+        <button class="btn-soft" onclick="window.cerrarCambiarPassword()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>Ingresá la nueva contraseña. Se pedirá re-auth antes de aplicar el cambio.</p>
+
+        <div class="modal-grid">
+          <div>
+            <label>Nueva contraseña</label>
+            <input id="newPassInput" type="password" placeholder="mínimo 6 caracteres" />
+          </div>
+        </div>
+
+        <div class="mini-status" id="changePassStatus"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-soft" onclick="window.cerrarCambiarPassword()">Cancelar</button>
+        <button class="btn-primary2" onclick="window.confirmarCambiarPassword()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Librerías exportación -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Sistema exportación -->
+  <script src="../JavaScript/export-system.js"></script>
+
+  <!-- Lógica admin -->
+  <script type="module" src="../JavaScript/admin.js"></script>
+
+  <!-- Permisos -->
+  <script type="module">
+    import { initPagePermissions } from "../JavaScript/permissions.js";
+    initPagePermissions("admin-panel");
+  </script>
+
+  <!-- ✅ Mi Cuenta + Re-auth (no rompe tu admin.js) -->
+  <script type="module">
+    import { db } from "../JavaScript/firebase.js";
+    import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    import {
+      getAuth,
+      EmailAuthProvider,
+      reauthenticateWithCredential,
+      updateEmail,
+      updatePassword
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    const auth = getAuth();
+    const $ = (id) => document.getElementById(id);
+
+    function openOverlay(id){ const el = $(id); if (el) el.style.display = "flex"; }
+    function closeOverlay(id){ const el = $(id); if (el) el.style.display = "none"; }
+    function setMiniStatus(id, msg, color="#666"){ const el = $(id); if (el){ el.textContent = msg; el.style.color = color; } }
+
+    function getRole(){ return (sessionStorage.getItem("userRole") || "lectura").toLowerCase(); }
+    function getAuthEmail(){ return (auth.currentUser?.email || sessionStorage.getItem("currentUser") || "").toLowerCase(); }
+    function getUid(){ return auth.currentUser?.uid || sessionStorage.getItem("authUid") || "—"; }
+
+    window.abrirMiCuenta = function(){
+      $("accEmail").textContent = getAuthEmail() || "—";
+      $("accUid").textContent = getUid();
+      $("accRole").textContent = getRole();
+      $("accountOverlay").style.display = "block";
+      $("accountDrawer").style.display = "block";
+      $("accountDrawer").setAttribute("aria-hidden", "false");
+    };
+
+    window.cerrarMiCuenta = function(){
+      $("accountOverlay").style.display = "none";
+      $("accountDrawer").style.display = "none";
+      $("accountDrawer").setAttribute("aria-hidden", "true");
+    };
+
+    let pendingSensitiveAction = null;
+
+    window.abrirReauth = function(description, onSuccess){
+      pendingSensitiveAction = onSuccess;
+      $("reauthEmail").value = getAuthEmail() || "—";
+      $("reauthPassword").value = "";
+      setMiniStatus("reauthStatus", "", "#666");
+      $("reauthDesc").textContent = description || "Para realizar esta acción, ingresá tu contraseña actual.";
+      openOverlay("reauthOverlay");
+      setTimeout(() => $("reauthPassword")?.focus(), 80);
+    };
+
+    window.cerrarReauth = function(){
+      pendingSensitiveAction = null;
+      closeOverlay("reauthOverlay");
+    };
+
+    async function doReauth(){
+      const user = auth.currentUser;
+      if (!user) { setMiniStatus("reauthStatus", "❌ Sesión inválida. Volvé a iniciar sesión.", "red"); return false; }
+
+      const password = $("reauthPassword").value || "";
+      if (!password) { setMiniStatus("reauthStatus", "Ingresá tu contraseña actual.", "red"); $("reauthPassword")?.focus(); return false; }
+
+      try{
+        setMiniStatus("reauthStatus", "Verificando...", "#333");
+        const cred = EmailAuthProvider.credential(user.email, password);
+        await reauthenticateWithCredential(user, cred);
+        setMiniStatus("reauthStatus", "✅ Identidad confirmada.", "green");
+        return true;
+      } catch (err){
+        console.error("reauth error:", err);
+        setMiniStatus("reauthStatus", "❌ Contraseña incorrecta o re-auth falló.", "red");
+        return false;
+      }
+    }
+
+    $("reauthConfirmBtn")?.addEventListener("click", async () => {
+      const ok = await doReauth();
+      if (!ok) return;
+      try{
+        const fn = pendingSensitiveAction;
+        window.cerrarReauth();
+        pendingSensitiveAction = null;
+        if (typeof fn === "function") await fn();
+      } catch (err){
+        console.error("Sensitive action error:", err);
+        alert("❌ No se pudo completar la acción: " + (err?.message || err));
+      }
+    });
+
+    window.abrirModalCambiarEmail = function(){
+      $("newEmailInput").value = "";
+      setMiniStatus("changeEmailStatus", "", "#666");
+      openOverlay("changeEmailOverlay");
+      setTimeout(() => $("newEmailInput")?.focus(), 80);
+    };
+    window.cerrarCambiarEmail = function(){ closeOverlay("changeEmailOverlay"); };
+
+    window.confirmarCambiarEmail = async function(){
+      const user = auth.currentUser;
+      if (!user) { setMiniStatus("changeEmailStatus", "❌ Sesión inválida. Volvé a iniciar sesión.", "red"); return; }
+
+      const newEmail = ($("newEmailInput").value || "").trim().toLowerCase();
+      if (!newEmail || !newEmail.includes("@")) { setMiniStatus("changeEmailStatus", "Ingresá un email válido.", "red"); return; }
+
+      window.abrirReauth("Para cambiar el email, ingresá tu contraseña actual.", async () => {
+        try{
+          setMiniStatus("changeEmailStatus", "Actualizando email...", "#333");
+          await updateEmail(user, newEmail);
+
+          sessionStorage.setItem("currentUser", newEmail);
+          sessionStorage.setItem("cicUser", newEmail);
+
+          const uid = user.uid;
+          try{ await updateDoc(doc(db, "users", uid), { email: newEmail }); } catch (_) {}
+
+          $("accEmail").textContent = newEmail;
+          setMiniStatus("changeEmailStatus", "✅ Email actualizado.", "green");
+          setTimeout(() => window.cerrarCambiarEmail(), 500);
+        } catch (err){
+          console.error("updateEmail error:", err);
+          setMiniStatus("changeEmailStatus", "❌ No se pudo actualizar: " + (err?.message || err), "red");
+        }
+      });
+    };
+
+    window.abrirModalCambiarPassword = function(){
+      $("newPassInput").value = "";
+      setMiniStatus("changePassStatus", "", "#666");
+      openOverlay("changePassOverlay");
+      setTimeout(() => $("newPassInput")?.focus(), 80);
+    };
+    window.cerrarCambiarPassword = function(){ closeOverlay("changePassOverlay"); };
+
+    window.confirmarCambiarPassword = async function(){
+      const user = auth.currentUser;
+      if (!user) { setMiniStatus("changePassStatus", "❌ Sesión inválida. Volvé a iniciar sesión.", "red"); return; }
+
+      const newPass = $("newPassInput").value || "";
+      if (newPass.length < 6) { setMiniStatus("changePassStatus", "La contraseña debe tener al menos 6 caracteres.", "red"); return; }
+
+      window.abrirReauth("Para cambiar la contraseña, ingresá tu contraseña actual.", async () => {
+        try{
+          setMiniStatus("changePassStatus", "Actualizando contraseña...", "#333");
+          await updatePassword(user, newPass);
+          setMiniStatus("changePassStatus", "✅ Contraseña actualizada.", "green");
+          setTimeout(() => window.cerrarCambiarPassword(), 500);
+        } catch (err){
+          console.error("updatePassword error:", err);
+          setMiniStatus("changePassStatus", "❌ No se pudo actualizar: " + (err?.message || err), "red");
+        }
+      });
+    };
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        window.cerrarReauth();
+        window.cerrarCambiarEmail();
+        window.cerrarCambiarPassword();
+      }
+    });
+  </script>
+
+  <!-- ✅ LOGOUT REAL (corta Firebase Auth + lock anti-autologin) -->
+  <script type="module">
+    import { handleLogoutRedirect } from "../JavaScript/logout.js";
+    window.handleLogout = () => handleLogoutRedirect("admin-login.html?loggedOut=1");
+  </script>
+
+  <!-- ✅ JS Hamburguesa -->
+  <script>
+    (function(){
+      const header = document.getElementById("topHeader");
+      const btn = document.getElementById("btnHamb");
+      if (!header || !btn) return;
+      btn.addEventListener("click", () => header.classList.toggle("nav-open"));
+    })();
+  </script>
+</body>
+</html>
