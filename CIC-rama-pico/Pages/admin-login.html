@@ -74,7 +74,7 @@
       <div id="status"></div>
 
       <div class="hint">
-        ✅ Login con <strong>Firebase Authentication</strong> <br/>     
+        ✅ Login con <strong>Firebase Authentication</strong> <br/>
       </div>
     </form>
   </div>
@@ -105,14 +105,15 @@
 
     const auth = getAuth();
 
+    // ✅ Unificamos el enrutado:
+    // profesional-panel.html resuelve por rol:
+    // - admin: todas
+    // - operador: no asignadas
+    // - profesional: asignadas a su profesionalId
+    // - lectura: Bienvenido
     function routeByRole(role) {
       role = (role || "lectura").toLowerCase();
-      if (role === "profesional") {
-        window.location.href = "profesional-panel.html";
-        return;
-      }
-      // admin / operador / lectura => admin.html (ven todo)
-      window.location.href = "admin.html";
+      window.location.href = "profesional-panel.html";
     }
 
     async function getUserProfile(uid) {
@@ -123,27 +124,38 @@
     }
 
     async function fallbackProfessionalByEmail(email) {
-      // compat: si no existe users/{uid}, intentamos enlazar con professionals por email
-      try {
-        const q = query(collection(db, "professionals"), where("email", "==", email));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          const d = snap.docs[0].data() || {};
-          return {
-            source: "professionals",
-            role: (d.rolSistema || "profesional"),
-            profesionalId: d.profesionalId || snap.docs[0].id,
-            profesionalNombre: `${d.nombre || ""} ${d.apellido || ""}`.trim() || "Profesional",
-            profesionalEspecialidad: d.especialidad || "",
-            profesionalEmail: d.email || email
-          };
-        }
-      } catch (e) {
-        console.warn("fallbackProfessionalByEmail:", e);
-      }
-      return { source: "fallback", role: "lectura", email };
-    }
+  try {
+    const q = query(collection(db, "professionals"), where("email", "==", email));
+    const snap = await getDocs(q);
 
+    if (!snap.empty) {
+      const docSnap = snap.docs[0];
+      const d = docSnap.data() || {};
+
+      // ✅ prioridad: el mismo código que guardás en consultas (ej: MM42234124)
+      const pid =
+        (d.profesionalId || d.idProfesional || d.codigo || d.matricula || "").trim()
+        || docSnap.id; // último recurso
+
+      return {
+        source: "professionals",
+        role: (d.rolSistema || "profesional"),
+        profesionalId: pid,
+        profesionalNombre: `${d.nombre || ""} ${d.apellido || ""}`.trim() || "Profesional",
+        profesionalEspecialidad: d.especialidad || "",
+        profesionalEmail: d.email || email
+      };
+    }
+  } catch (e) {
+    console.warn("fallbackProfessionalByEmail:", e);
+  }
+
+  return { source: "fallback", role: "lectura", email };
+}
+
+
+    // ✅ Sesión: mantenemos todo lo anterior, pero ahora guardamos SIEMPRE profesionalId/nombre si existen
+    // (no rompe nada, y arregla el panel profesional)
     function writeSession(profile, email, uid) {
       const role = (profile?.role || "lectura").toLowerCase();
 
@@ -154,12 +166,18 @@
 
       if (profile?.displayName) sessionStorage.setItem("displayName", profile.displayName);
 
+      // ✅ Guardar SIEMPRE si vienen en el perfil
+      if (profile?.profesionalId) sessionStorage.setItem("profesionalId", profile.profesionalId);
+      if (profile?.profesionalNombre) sessionStorage.setItem("profesionalNombre", profile.profesionalNombre);
+      if (profile?.profesionalEspecialidad) sessionStorage.setItem("profesionalEspecialidad", profile.profesionalEspecialidad);
+
+      // Compat flags
       if (role === "profesional") {
         sessionStorage.setItem("profesionalLoggedIn", "true");
-        if (profile?.profesionalId) sessionStorage.setItem("profesionalId", profile.profesionalId);
-        if (profile?.profesionalNombre) sessionStorage.setItem("profesionalNombre", profile.profesionalNombre);
         sessionStorage.setItem("profesionalEmail", email);
-        if (profile?.profesionalEspecialidad) sessionStorage.setItem("profesionalEspecialidad", profile.profesionalEspecialidad);
+      } else {
+        try { sessionStorage.removeItem("profesionalLoggedIn"); } catch (_) {}
+        sessionStorage.setItem("profesionalEmail", email); // no molesta
       }
     }
 
