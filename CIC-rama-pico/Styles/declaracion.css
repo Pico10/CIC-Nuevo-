@@ -1,0 +1,116 @@
+/* RESET BÁSICO */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* BODY COMO FLEX */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #368dff;
+    color: #fff;
+    line-height: 1.6;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* CONTENIDO CENTRAL */
+.contenedor {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* CAJA */
+.declaracion-box {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(253, 0, 0, 0.75);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.declaracion-box h1 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.declaracion-box p {
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+/* CHECK */
+.aceptacion {
+    margin: 20px 0;
+    font-size: 14px;
+}
+
+.aceptacion input {
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+/* BOTÓN */
+button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #000;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* FOOTER */
+footer {
+    text-align: center;
+    padding: 15px 0;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* TABLETS */
+@media (min-width: 600px) {
+    .declaracion-box {
+        max-width: 600px;
+        padding: 30px;
+    }
+
+    .declaracion-box h1 {
+        font-size: 26px;
+    }
+
+    .declaracion-box p,
+    .aceptacion {
+        font-size: 15px;
+    }
+}
+
+/* DESKTOP */
+@media (min-width: 1024px) {
+    .declaracion-box {
+        max-width: 720px;
+    }
+
+    .declaracion-box h1 {
+        font-size: 30px;
+    }
+
+    .declaracion-box p {
+        font-size: 16px;
+    }
+}
