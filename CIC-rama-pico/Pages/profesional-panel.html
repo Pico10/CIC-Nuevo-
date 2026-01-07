@@ -26,6 +26,8 @@
     .hamb-lines span:nth-child(2){ top:6px; }
     .hamb-lines span:nth-child(3){ top:12px; }
 
+    .table-container.scroll-compact { max-height: 420px; overflow-y: auto; }
+
     @media (max-width: 760px){
       .nav-toggle{ display:flex; }
       .header .nav-links{
@@ -41,6 +43,8 @@
         justify-content:center;
         text-align:center;
       }
+      .controls-row{ flex-wrap:wrap; gap:10px; }
+      .search-box{ width:100%; }
     }
   </style>
 </head>
@@ -61,12 +65,9 @@
     <nav class="nav-links">
       <a href="../index.html">Inicio</a>
 
-      <!-- Profesionales pueden ver paneles -->
       <a href="admin.html">Panel Admin</a>
       <a href="consultas.html">Consultas/Casos</a>
       <a href="profesionales.html">Profesionales</a>
-
-      <!-- Pueden editar usuarios pero NO crearlos (lo controla user-management + permissions.js) -->
       <a href="user-management.html">Gestión de Usuarios</a>
 
       <a href="#" onclick="handleLogout()" style="background: rgba(255,255,255,0.2); border-radius: 4px;">Cerrar Sesión</a>
@@ -74,27 +75,177 @@
   </div>
 
   <div class="container">
-    <div class="data-table">
+
+    <!-- ✅ VISTA SOLO LECTURA (se completa por JS) -->
+    <div class="data-table" id="welcomeOnly" style="display:none;">
       <div class="table-header">
         <h3>Bienvenido/a</h3>
         <span id="whoami">—</span>
       </div>
-
       <div style="padding:16px;">
         <p style="margin:0;color:#555;">
-          
+          Estás en modo <b>solo lectura</b>.
         </p>
       </div>
     </div>
+
+    <!-- ✅ VISTA LISTADO (admin/profesional/operador) -->
+    <div id="panelList" style="display:none;">
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalConsultas">0</div>
+          <div class="stat-label">Total Consultas</div>
+        </div>
+        <div class="stat-card" style="background:#fff3cd;">
+          <div class="stat-number" id="consultasPendientes">0</div>
+          <div class="stat-label">Pendientes</div>
+        </div>
+        <div class="stat-card" style="background:#cfe2ff;">
+          <div class="stat-number" id="consultasEnProceso">0</div>
+          <div class="stat-label">En Proceso</div>
+        </div>
+        <div class="stat-card" style="background:#d1e7dd;">
+          <div class="stat-number" id="consultasResueltas">0</div>
+          <div class="stat-label">Resueltas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="consultasUrgentes">0</div>
+          <div class="stat-label">Urgentes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="consultasDerivacion">0</div>
+          <div class="stat-label">Por Derivación</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="controls-row">
+          <input id="searchInput" class="search-box" type="text" placeholder="Buscar por persona, motivo, profesional...">
+
+          <select class="filter-select" id="filterEstado">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_proceso">En Proceso</option>
+            <option value="notificado">Notificado</option>
+            <option value="resuelto">Resuelto</option>
+            <option value="cerrado">Cerrado</option>
+            <option value="archivado">Archivado</option>
+          </select>
+
+          <select class="filter-select" id="filterTipo">
+            <option value="">Todos los tipos</option>
+            <option value="espontanea">Demanda Espontánea</option>
+            <option value="derivacion">Derivación Institucional</option>
+          </select>
+
+          <select class="filter-select" id="filterPrioridad">
+            <option value="">Todas las prioridades</option>
+            <option value="baja">Baja</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente</option>
+          </select>
+
+          <!-- ✅ Para admin (y si querés profesional), operador lo oculta automáticamente -->
+          <select class="filter-select" id="filterProfesional">
+            <option value="">Todos los profesionales</option>
+          </select>
+
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8f9fa;border-radius:6px;">
+            <input type="checkbox" id="showArchivados" style="width:18px;height:18px;cursor:pointer;">
+            <label for="showArchivados" style="cursor:pointer;margin:0;font-size:14px;color:#495057;">Mostrar archivados</label>
+          </div>
+
+          <button class="btn btn-primary" onclick="loadConsultas()">Actualizar</button>
+        </div>
+      </div>
+
+      <div class="data-table">
+        <div class="table-header">
+          <h3 id="tituloTabla">Consultas asignadas</h3>
+          <span id="resultCount">0 resultados</span>
+        </div>
+
+        <div class="table-container scroll-compact">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Persona</th>
+                <th>Motivo</th>
+                <th>Tipo</th>
+                <th>Profesional</th>
+                <th>Estado</th>
+                <th>Prioridad</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="consultasTableBody">
+              <tr><td colspan="8" class="loading">Cargando consultas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
   </div>
+
+  <!-- MODAL ESTADO (igual que consultas) -->
+  <div id="estadoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff;padding:30px;border-radius:10px;max-width:500px;width:90%;">
+      <h3 style="margin-bottom: 20px; color: #333;">Cambiar Estado de Consulta</h3>
+
+      <div style="background: #fff3cd; border-left: 4px solid #856404; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+        <p style="margin: 0; font-size: 13px; color: #856404;">
+          <strong>💡 Nota:</strong> Las consultas archivadas se ocultan por defecto pero se mantienen en el sistema para auditoría.
+        </p>
+      </div>
+
+      <label style="display: block; margin-bottom: 8px; font-weight: 600;">Nuevo Estado:</label>
+      <select id="nuevoEstado" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:5px; margin-bottom: 20px;">
+        <option value="pendiente">Pendiente</option>
+        <option value="en_proceso">En Proceso</option>
+        <option value="notificado">Notificado</option>
+        <option value="resuelto">Resuelto</option>
+        <option value="cerrado">Cerrado</option>
+        <option value="archivado">📦 Archivado</option>
+      </select>
+
+      <label style="display: block; margin-bottom: 8px; font-weight: 600;">Observación (opcional):</label>
+      <textarea id="observacionEstado" rows="3" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:5px;" placeholder="Motivo del cambio de estado..."></textarea>
+
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+        <button onclick="cerrarModalEstado()" class="btn btn-secondary">Cancelar</button>
+        <button onclick="confirmarCambioEstado()" class="btn btn-primary" data-perm="consultas-estado">Guardar Cambio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ LIBRERÍAS (para PDF/Certificado) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- ✅ EXPORTS / CERTIFICADO (mantener igual que en consultas) -->
+  <script src="../JavaScript/export-system.js"></script>
+  <script src="../JavaScript/export-consulta-pdf.js"></script>
+  <script src="../JavaScript/export-certificado.js"></script>
+
+  <!-- ✅ LÓGICA PANEL PROFESIONAL -->
+  <script type="module" src="../JavaScript/profesional-panel.js"></script>
 
   <!-- ✅ PERMISOS -->
   <script type="module">
     import { initPagePermissions } from "../JavaScript/permissions.js";
     initPagePermissions("profesional-panel");
 
-    const nombre = sessionStorage.getItem("profesionalNombre") || sessionStorage.getItem("displayName") || sessionStorage.getItem("currentUser") || "Profesional";
-    const rol = (sessionStorage.getItem("userRole") || "profesional").toLowerCase();
+    const nombre = sessionStorage.getItem("profesionalNombre")
+      || sessionStorage.getItem("displayName")
+      || sessionStorage.getItem("currentUser")
+      || "Usuario";
+
+    const rol = (sessionStorage.getItem("userRole") || "lectura").toLowerCase();
     const el = document.getElementById("whoami");
     if (el) el.textContent = `${nombre} (${rol})`;
   </script>
