@@ -178,3 +178,28 @@ footer {
         height: 220px;
     }
 }
+
+
+footer {
+    text-align: center;
+    font-size: 12px;
+    color: #aaa;
+    padding: 15px 10px;
+    background-color: #ffffff;
+}
+
+footer .produced-by {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #999;
+}
+
+footer .produced-by a {
+    color: #368dff;
+    text-decoration: none;
+    margin: 0 4px;
+}
+
+footer .produced-by a:hover {
+    text-decoration: underline;
+}
